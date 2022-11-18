@@ -1,0 +1,27 @@
+<h4>Buildings with incomplete data</h4>
+<div id="incomplete"></div>
+
+<h4>Closest house to ours</h4>
+<div id="closest"></div>
+
+<script>
+    fetch('http://127.0.0.1:3000/buildings')
+        .then((response) => response.json())
+        .then((houses)=> {
+            let incomplete = getIncomplete(houses);
+        })
+        .catch((error) => {
+
+        });
+
+    function getIncomplete(houses){
+        const noHouses = [];
+        houses.forEach(h =>{
+            if(!houses.params || !house.params.rooms){
+                noHouses.push(h);
+            }
+        });
+        let sorted = noHouses.sort((h1, h2) => h1.name - h2.name )
+        return noHouses;
+    }
+</script>
