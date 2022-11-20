@@ -5,23 +5,82 @@
 <div id="closest"></div>
 
 <script>
-    fetch('http://127.0.0.1:3000/buildings')
+    fetch('http://localhost:3000/houses')
         .then((response) => response.json())
-        .then((houses)=> {
+        .then((houses) => {
             let incomplete = getIncomplete(houses);
+            renderResult(incomplete, '#incomplete');
+            let target = {
+                lat: 52.5418739,
+                lon: 13.4057378
+            };
+            let closestResult = getClosest(houses, target);
+            renderResult(closestResult, '#closest');
         })
         .catch((error) => {
 
         });
 
-    function getIncomplete(houses){
+    function getIncomplete(houses) {
         const noHouses = [];
-        houses.forEach(h =>{
-            if(!houses.params || !house.params.rooms){
+        houses.forEach(h => {
+            if (!h.params || !h.params.rooms) {
                 noHouses.push(h);
             }
         });
-        let sorted = noHouses.sort((h1, h2) => h1.name - h2.name )
+        let sorted = noHouses.sort((h1, h2) => h1.name - h2.name)
         return noHouses;
+    }
+
+    function getClosest(houses, target) {
+        const distanceSort = (h1, h2) => {
+            const distance1 = getDistanceFromLatLonInKm(
+                target.lat, target.lon,
+                h1.coords.lat, h1.coords.lon
+            );
+
+            const distance2 = getDistanceFromLatLonInKm(
+                target.lat, target.lon,
+                h2.coords.lat, h2.coords.lon
+            );
+
+            return distance1 - distance2;
+        }
+
+        let result = houses.sort(distanceSort);
+        const [, ...closest] = result;
+        return closest;
+    }
+
+    /* helper function to get the distance */
+    function getDistanceFromLatLonInKm(lat1, lohouse1, lat2, lohouse2) {
+        const R = 6371; // Radius of the earth in km
+        const dLat = this.deg2rad(lat2 - lat1);  // deg2rad below
+        const dLon = this.deg2rad(lohouse2 - lohouse1);
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const d = R * c; // Distance in km
+        return d;
+    }
+
+    function deg2rad(deg) {
+        return deg * (Math.PI / 180);
+    }
+
+    function renderResult(houses, targetElement) {
+        let output = ``;
+        houses.forEach(house => {
+            output += `
+            name: ${house.name}<br>
+            value: ${house.params?.value || 0}<br>
+            rooms: ${house.params?.rooms || 0}<br>
+            lat: ${house.coords?.lat}<br>
+            lon: ${house.coords?.lon}<br>
+            <hr>`;
+        });
+        document.querySelector(targetElement).innerHTML = output;
     }
 </script>
